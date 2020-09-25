@@ -100,7 +100,7 @@ resource "aws_security_group_rule" "ingress_bastion" {
   from_port   = var.cidrs[count.index].from_port
   to_port     = var.cidrs[count.index].to_port
   protocol    = var.cidrs[count.index].protocol
-  cidr_blocks = [var.cidrs[count.index].cidr_block]
+  cidr_blocks = [split(",", var.cidrs[count.index].cidr_block)]
   security_group_id = aws_security_group.bastion_host_security_group.id
 }
 resource "aws_security_group_rule" "egress_bastion" {
