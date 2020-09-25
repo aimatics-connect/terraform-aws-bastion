@@ -80,31 +80,29 @@ resource "aws_security_group" "bastion_host_security_group" {
   name        = "${local.name_prefix}-host"
   vpc_id      = var.vpc_id
 
-  dynamic "ingress" {
-      for_each=var.cidrs
-      content {
-          description = ingress.key
-          from_port   = var.public_ssh_port
-          to_port     = var.public_ssh_port
-          protocol    = "TCP"
-          cidr_blocks = [ ingress.value ] 
-      }
-  }
-
   tags = merge(var.tags)
 }
-/*
-resource "aws_security_group_rule" "ingress_bastion" {
+resource "aws_security_group_rule" "ingress_inner_bastion" {
   description = "Incoming traffic to bastion"
   type        = "ingress"
   from_port   = var.public_ssh_port
   to_port     = var.public_ssh_port
   protocol    = "TCP"
-  cidr_blocks = concat(data.aws_subnet.subnets.*.cidr_block, var.cidrs)
+  cidr_blocks = concat(data.aws_subnet.subnets.*.cidr_block)
 
   security_group_id = aws_security_group.bastion_host_security_group.id
 }
-*/
+
+resource "aws_security_group_rule" "ingress_bastion" {
+  count = length(var.cidrs)
+  description = var.cidrs[count.index].description
+  type        = "ingress"
+  from_port   = var.public_ssh_port
+  to_port     = var.public_ssh_port
+  protocol    = "TCP"
+  cidr_blocks = [var.cidr[count.index].cidr_block
+  security_group_id = aws_security_group.bastion_host_security_group.id
+}
 resource "aws_security_group_rule" "egress_bastion" {
   description = "Outgoing traffic from bastion to instances"
   type        = "egress"
