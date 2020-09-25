@@ -97,9 +97,9 @@ resource "aws_security_group_rule" "ingress_bastion" {
   count = length(var.cidrs)
   description = var.cidrs[count.index].description
   type        = "ingress"
-  from_port   = var.public_ssh_port
-  to_port     = var.public_ssh_port
-  protocol    = "TCP"
+  from_port   = var.cidrs[count.index].from_port
+  to_port     = var.cidrs[count.index].to_port
+  protocol    = var.cidrs[count.index].protocol
   cidr_blocks = [var.cidr[count.index].cidr_block
   security_group_id = aws_security_group.bastion_host_security_group.id
 }
