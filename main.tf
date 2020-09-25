@@ -69,9 +69,9 @@ resource "aws_s3_bucket" "bucket" {
 }
 
 resource "aws_s3_bucket_object" "bucket_public_keys_readme" {
-  bucket  = aws_s3_bucket.bucket.id
-  key     = "public-keys/README.txt"
-  content = "Drop here the ssh public keys of the instances you want to control"
+  bucket     = aws_s3_bucket.bucket.id
+  key        = "public-keys/README.txt"
+  content    = "Drop here the ssh public keys of the instances you want to control"
   kms_key_id = aws_kms_key.key.arn
 }
 
@@ -94,13 +94,13 @@ resource "aws_security_group_rule" "ingress_inner_bastion" {
 }
 
 resource "aws_security_group_rule" "ingress_bastion" {
-  count = length(var.cidrs)
-  description = var.cidrs[count.index].description
-  type        = "ingress"
-  from_port   = var.cidrs[count.index].from_port
-  to_port     = var.cidrs[count.index].to_port
-  protocol    = var.cidrs[count.index].protocol
-  cidr_blocks = split(",", replace(var.cidrs[count.index].cidr_block," ",""))
+  count             = length(var.cidrs)
+  description       = var.cidrs[count.index].description
+  type              = "ingress"
+  from_port         = var.cidrs[count.index].from_port
+  to_port           = var.cidrs[count.index].to_port
+  protocol          = var.cidrs[count.index].protocol
+  cidr_blocks       = split(",", replace(var.cidrs[count.index].cidr_block, " ", ""))
   security_group_id = aws_security_group.bastion_host_security_group.id
 }
 resource "aws_security_group_rule" "egress_bastion" {
@@ -201,6 +201,33 @@ resource "aws_iam_policy" "bastion_host_policy" {
 resource "aws_iam_role_policy_attachment" "bastion_host" {
   policy_arn = aws_iam_policy.bastion_host_policy.arn
   role       = aws_iam_role.bastion_host_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_ec2" {
+  role       = aws_iam_role.bastion_host_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_automation" {
+  role       = aws_iam_role.bastion_host_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "default" {
+  role       = aws_iam_role.bastion_host_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_route53_record" "bastion_record_name" {

@@ -22,22 +22,22 @@ variable "region" {
 }
 variable "cidrs" {
   description = "List of CIDRs than can access to the bastion. Default : 0.0.0.0/0"
-    type = list(object({
-      from_port   = number
-      to_port     = number
-      protocol    = string
-      cidr_block  = string
-      description = string
-    }))
-    default     = [
-        {
-          from_port   = 22
-          to_port     = 22
-          protocol    = "tcp"
-          cidr_block  = "0.0.0.0/32"
-          description = "default any"
-        }
-     ]
+  type = list(object({
+    from_port   = number
+    to_port     = number
+    protocol    = string
+    cidr_block  = string
+    description = string
+  }))
+  default = [
+    {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_block  = "0.0.0.0/32"
+      description = "default any"
+    }
+  ]
 }
 variable "is_lb_private" {
   description = "If TRUE the load balancer scheme will be \"internal\" else \"internet-facing\""
