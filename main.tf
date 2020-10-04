@@ -260,6 +260,9 @@ resource "aws_lb_target_group" "bastion_lb_target_group" {
   vpc_id      = var.vpc_id
   target_type = "instance"
 
+  lifecycle {
+    create_before_destroy = true
+  }
   health_check {
     port     = "traffic-port"
     protocol = "TCP"
